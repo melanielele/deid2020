@@ -2,8 +2,98 @@ import re
 import sys
 phone_pattern ='(\d{3}[-\.\s/]??\d{3}[-\.\s/]??\d{4}|\(\d{3}\)\s*\d{3}[-\.\s/]??\d{4})'
 
-# compiling the reg_ex would save sime time!
+# Age indicators that after ages
+age_indicators_suff = ("year old", "y\. o\.", "y\.o\.","y", "yo","years old", "year-old", "-year-old", "years-old", "-years-old", "years of age", "yrs of age")
+
+# Age indicators that precede ages
+age_indicators_pre = ("age", "he is", "she is", "patient is")
+
+# Digits, used in identifying ages
+digits = ("one","two","three","four","five","six","seven","eight","nine", "")
+
+# compiling the reg_ex would save some time!
 ph_reg = re.compile(phone_pattern)
+
+#Decide to extract age information from the patient notes
+def check_for_age(patient,note,chunk,output_handle):
+    # The perl code handles texts a bit differently,
+    # we found that adding this offset to start and end positions would produce the same results
+    offset = 27
+
+    # For each new note, the first line should be Patient X Note Y and then all the personal information positions
+    output_handle.write('Patient {}\tNote {}\n'.format(patient, note))
+
+    #iterate over all the suffix age indicator
+    for element in age_indicators_suff:
+        #this regular expression matches all the string with age + year old/y.o/years old and etc.
+        #eg. Eighty one year old
+
+        age_pattern='(([A-Za-z]+)([\s \-])([A-Za-z]+)) ? '+element+' '
+        age_reg=re.compile(age_pattern)
+        for match in age_reg.finditer(chunk.lower()):
+            # debug print, 'end=" "' stops print() from adding a new line
+            #print(element)
+            print(patient, note, end=' ')
+            print((match.start() - offset), match.end() - offset, match.group())
+
+            # create the string that we want to write to file ('start start end')
+            result = str(match.start() - offset) + ' ' + str(match.start() - offset) + ' ' + str(match.end() - offset)
+
+            # write the result to one line of output
+            output_handle.write(result + '\n')
+        #this regular expression matches all the string with digit age + year old/y.o/years old and etc.
+        #eg. 57 year old
+        age_pattern='(\d+) *'+element
+        age_reg=re.compile(age_pattern)
+        for match in age_reg.finditer(chunk.lower()):
+            # debug print, 'end=" "' stops print() from adding a new line
+            #print(element)
+            print(patient, note, end=' ')
+            print((match.start() - offset), match.end() - offset, match.group())
+
+            # create the string that we want to write to file ('start start end')
+            result = str(match.start() - offset) + ' ' + str(match.start() - offset) + ' ' + str(match.end() - offset)
+
+            # write the result to one line of output
+            output_handle.write(result + '\n')
+
+    #iterate over all the prefix age indicator
+    for element in age_indicators_pre:
+        # this regular expression matches all the string with he is/she is + age
+        # eg. he is 58
+        # eg. age xxx
+
+        age_pattern = '('+ element +' + *)(\d+)'
+        age_reg = re.compile(age_pattern)
+        for match in age_reg.finditer(chunk.lower()):
+            # debug print, 'end=" "' stops print() from adding a new line
+            #print(element)
+            print(patient, note, end=' ')
+            print((match.start() - offset), match.end() - offset, match.group())
+
+            # create the string that we want to write to file ('start start end')
+            result = str(match.start() - offset) + ' ' + str(match.start() - offset) + ' ' + str(match.end() - offset)
+
+            # write the result to one line of output
+            output_handle.write(result + '\n')
+
+        # age_pattern = '(' + element + ' + *)(([A-Za-z]+)([\s \-])([A-Za-z]+))'
+        # age_reg = re.compile(age_pattern)
+        # for match in age_reg.finditer(chunk.lower()):
+        #     # debug print, 'end=" "' stops print() from adding a new line
+        #     print(element)
+        #     print(patient, note, end=' ')
+        #     print((match.start() - offset), match.end() - offset, match.group())
+        #
+        #     # create the string that we want to write to file ('start start end')
+        #     result = str(match.start() - offset) + ' ' + str(match.start() - offset) + ' ' + str(match.end() - offset)
+        #
+        #     # write the result to one line of output
+        #     output_handle.write(result + '\n')
+
+
+
+
 
 
 def check_for_phone(patient,note,chunk, output_handle):
@@ -36,7 +126,7 @@ def check_for_phone(patient,note,chunk, output_handle):
     for match in ph_reg.finditer(chunk):
                 
             # debug print, 'end=" "' stops print() from adding a new line
-            print(patient, note,end=' ')
+            print(patient, note, end=' ')
             print((match.start()-offset),match.end()-offset, match.group())
                 
             # create the string that we want to write to file ('start start end')    
@@ -96,7 +186,9 @@ def deid_phone(text_path= 'id.text', output_path = 'phone.phi'):
                 if len(record_end):
                     # Now we have a full patient note stored in `chunk`, along with patient numerb and note number
                     # pass all to check_for_phone to find any phone numbers in note.
-                    check_for_phone(patient,note,chunk.strip(), output_file)
+                    #check_for_phone(patient,note,chunk.strip(), output_file)
+                    # add check for age function here to also check matched age pattern
+                    check_for_age(patient,note,chunk.strip(), output_file)
                     
                     # initialize the chunk for the next note to be read
                     chunk = ''
