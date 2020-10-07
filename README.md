@@ -10,7 +10,7 @@ Perl and Python code for de-identifying electronic medical records
 ### De-identification
 1- Change to the python directory
 
-2- run ```python deid.py id.text phone.phi```
+2- run ```python deid-melanie.py id.text age_phone.phi>output.txt```
 
 In which:
 
@@ -19,7 +19,7 @@ In which:
 ### Stats
 1- change to the python directory
 
-2- run ```python stats.py id.deid id-phi.phrase phone.phi ```
+2- run ```python stats.py id.deid id-phi.phrase age_phone.phi ```
 
 In which:
 
