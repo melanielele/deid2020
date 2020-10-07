@@ -30,6 +30,7 @@ def check_for_age(patient,note,chunk,output_handle):
 
         age_pattern='(([A-Za-z]+)([\s \-])([A-Za-z]+)) ? '+element+' '
         age_reg=re.compile(age_pattern)
+        #for every match in the age_pattern
         for match in age_reg.finditer(chunk.lower()):
             # debug print, 'end=" "' stops print() from adding a new line
             #print(element)
@@ -77,6 +78,7 @@ def check_for_age(patient,note,chunk,output_handle):
             # write the result to one line of output
             output_handle.write(result + '\n')
 
+        # at first I want to include this part of code, but the accuracy went down significantly after I include this part
         # age_pattern = '(' + element + ' + *)(([A-Za-z]+)([\s \-])([A-Za-z]+))'
         # age_reg = re.compile(age_pattern)
         # for match in age_reg.finditer(chunk.lower()):
@@ -186,7 +188,7 @@ def deid_phone(text_path= 'id.text', output_path = 'phone.phi'):
                 if len(record_end):
                     # Now we have a full patient note stored in `chunk`, along with patient numerb and note number
                     # pass all to check_for_phone to find any phone numbers in note.
-                    #check_for_phone(patient,note,chunk.strip(), output_file)
+                    check_for_phone(patient,note,chunk.strip(), output_file)
                     # add check for age function here to also check matched age pattern
                     check_for_age(patient,note,chunk.strip(), output_file)
                     
